@@ -11,7 +11,7 @@ faq_model = api.model('FAQ', {
 
 
 @api.route("/faq")
-class FAQListResource(Resource):
+class FaqApi(Resource):
     @api.marshal_list_with(faq_model)
     def get(self):
         faqs = FrequentlyAskedQuestion.query.order_by(FrequentlyAskedQuestion.order_num).all()

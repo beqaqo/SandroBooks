@@ -1,6 +1,6 @@
 from flask_restx import Resource, fields, reqparse
 from src.ext import api
-from src.models.book import Book as BookModel
+from src.models.book import Book
 from src.enums import CoverType, Booktype, Audience
 import random
 
@@ -63,35 +63,36 @@ def serialize_book_detail(b):
 
 
 @api.route("/books")
-class BooksListResource(Resource):
+class BooksApi(Resource):
     def get(self):
         args = parser.parse_args()
 
         page_size = max(1, min(args["page_size"] or 12, 48))
         page = max(1, args["page"] or 1)
 
-        query = BookModel.query
+        query = (Book
+                 .query)
 
         if args["audience"]:
-            query = query.filter(BookModel.audience == args["audience"])
+            query = query.filter(Book.audience == args["audience"])
         if args["book_type"]:
-            query = query.filter(BookModel.book_type == args["book_type"])
+            query = query.filter(Book.book_type == args["book_type"])
         if args["cover_type"]:
-            query = query.filter(BookModel.cover_type == args["cover_type"])
+            query = query.filter(Book.cover_type == args["cover_type"])
         if args["search"]:
-            query = query.filter(BookModel.title.ilike(f"%{args['search']}%"))
+            query = query.filter(Book.title.ilike(f"%{args['search']}%"))
 
         sort = args.get("sort")
         if sort == "free":
-            query = query.filter(BookModel.price == 0)
+            query = query.filter(Book.price == 0)
         elif sort == "price_desc":
-            query = query.order_by(BookModel.price.desc())
+            query = query.order_by(Book.price.desc())
         elif sort == "price_asc":
-            query = query.order_by(BookModel.price.asc())
+            query = query.order_by(Book.price.asc())
         elif sort == "date_desc":
-            query = query.order_by(BookModel.publication_year.desc())
+            query = query.order_by(Book.publication_year.desc())
         elif sort == "date_asc":
-            query = query.order_by(BookModel.publication_year.asc())
+            query = query.order_by(Book.publication_year.asc())
 
         total = query.count()
         pages = (total + page_size - 1) // page_size
@@ -107,22 +108,22 @@ class BooksListResource(Resource):
 
 
 @api.route("/book/<int:id>")
-class SingleBookResource(Resource):
+class BookApi(Resource):
     def get(self, id):
-        book = BookModel.query.get_or_404(id)
+        book = Book.query.get_or_404(id)
 
         same_series = []
         if book.about_series:
             same_series_query = (
-                BookModel.query
-                .filter(BookModel.about_series == book.about_series, BookModel.id != id)
+                Book.query
+                .filter(Book.about_series == book.about_series, Book.id != id)
                 .limit(4)
                 .all()
             )
             same_series = [serialize_book(b) for b in same_series_query]
 
         excluded_ids = {id} | {b["id"] for b in same_series}
-        other_books = BookModel.query.filter(~BookModel.id.in_(excluded_ids)).all()
+        other_books = Book.query.filter(~Book.id.in_(excluded_ids)).all()
         you_may_also_like = [serialize_book(b) for b in random.sample(other_books, min(4, len(other_books)))]
 
         return {
