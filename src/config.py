@@ -4,7 +4,6 @@ class Config(object):
     BASE_DIRECTORY = path.abspath(path.dirname(__file__))
 
     DATABASE_URL = environ.get("DATABASE_URL")
-
     if DATABASE_URL:
         # Fix Render postgres:// issue
         if DATABASE_URL.startswith("postgres://"):
