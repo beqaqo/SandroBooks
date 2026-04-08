@@ -64,6 +64,7 @@ def serialize_book_detail(b):
 
 @api.route("/books")
 class BooksApi(Resource):
+    @api.expect(parser)
     def get(self):
         args = parser.parse_args()
 
