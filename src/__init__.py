@@ -9,6 +9,7 @@ from src.models.user import User
 from src.models.series import Series
 from src.models.book import Book
 from src.models.project import Project
+import src.endpoints.project.project_api
 from src.models.faq import FrequentlyAskedQuestion
 import src.admin_views
 import src.endpoints.book.book_api
