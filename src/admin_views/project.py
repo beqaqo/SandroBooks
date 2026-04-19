@@ -20,10 +20,17 @@ class ProjectsView(SecureModelView):
         return ""
 
     def _on_model_change(self, form, model, is_created):
-        if form.image.data:
-            result = cloud.uploader.upload(form.image.data, folder="SandrosBooks")
+        if form.image.data and getattr(form.image.data, "filename", None):
+
+            result = cloud.uploader.upload(
+                form.image.data,
+                folder="SandrosBooks"
+            )
+
             model.image = result["secure_url"]
-            form.image.data = None
+            model.image_public_id = result["public_id"]
+
+        form.image.data = None
 
 
     column_formatters = {
