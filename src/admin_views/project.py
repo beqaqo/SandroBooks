@@ -2,6 +2,8 @@ from src.admin_views.base import SecureModelView
 from wtforms import FileField
 from markupsafe import Markup
 
+from src.ext import cloud
+
 
 class ProjectsView(SecureModelView):
     column_list = ('title', 'description', 'link', 'image')
@@ -16,6 +18,16 @@ class ProjectsView(SecureModelView):
         if model.image:
             return Markup(f'<img src="{model.image}" width="100">')
         return ""
+
+    def _on_model_change(self, form, model, is_created):
+        if form.image.data:
+            result = cloud.uploader.upload(form.image.data, folder="SandrosBooks", public_id=f"book_{model.id}")
+            model.image = result["secure_url"]
+            form.image.data = None
+
+    def on_model_delete(self, model):
+        if model.image_public_id:
+            cloud.uploader.destroy(f"book_{model.id}")
 
     column_formatters = {
         'image': _image_formatter
