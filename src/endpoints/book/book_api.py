@@ -23,7 +23,6 @@ book_detail_model = api.model('BookDetail', {
     "audio_link": fields.String,
     "android_link": fields.String,
     "ios_link": fields.String,
-    "about_series": fields.String,
 })
 
 parser = reqparse.RequestParser()
@@ -58,7 +57,6 @@ def serialize_book_detail(b):
         "audio_link": b.audio_link,
         "android_link": b.android_link,
         "ios_link": b.ios_link,
-        "about_series": b.about_series,
     }
 
 
@@ -114,10 +112,10 @@ class BookApi(Resource):
         book = Book.query.get_or_404(id)
 
         same_series = []
-        if book.about_series:
+        if book.series_id:
             same_series_query = (
                 Book.query
-                .filter(Book.about_series == book.about_series, Book.id != id)
+                .filter(Book.series_id == book.series_id, Book.id != id)
                 .limit(4)
                 .all()
             )

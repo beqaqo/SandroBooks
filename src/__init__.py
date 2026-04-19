@@ -5,12 +5,8 @@ from src.config import Config
 from src.ext import db, migrate, login_manager, admin, api, cloud
 from src.views import  auth_blueprint
 from src.commands import init_db, populate_db
-from src.models.user import User
-from src.models.series import Series
-from src.models.book import Book
-from src.models.project import Project
+from src.models import User, Series, Book, FrequentlyAskedQuestion, Project
 import src.endpoints.project.project_api
-from src.models.faq import FrequentlyAskedQuestion
 import src.admin_views
 import src.endpoints.book.book_api
 import src.endpoints.faq.faq_api
@@ -45,7 +41,6 @@ def register_extensions(app):
 
     # Flask_admin
     admin.init_app(app)
-    admin.add_view(BookView(Book, db.session, name="Books Default", endpoint="books_default"))
     src.admin_views.register_admin_views(admin, db)
 
     #Flask_RestX
