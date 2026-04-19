@@ -1,7 +1,8 @@
 from src.admin_views.base import SecureModelView
-from flask_admin.form import FileUploadField
-from src.config import Config
+from wtforms import FileField
 from markupsafe import Markup
+
+from src.ext import cloud, uploader
 
 
 class BookView(SecureModelView):
@@ -28,8 +29,14 @@ class BookView(SecureModelView):
 
     def _image_formatter(self, context, model, name):
         if model.image:
-            return Markup(f'<img src="/static/assets/{model.image}" width="100">')
+            return Markup(f'<img src="{model.image}" width="100">')
         return ""
+
+    def _on_model_change(self, form, model, is_created):
+        if form.image.data:
+            result = cloud.uploader.upload(form.image.data)
+            model.image = result["secure_url"]
+            form.image.data = None
 
     column_formatters = {
         'description': _description_formatter,
@@ -41,7 +48,7 @@ class BookView(SecureModelView):
     }
 
     form_extra_fields = {
-        'image': FileUploadField('Image', base_path=Config.UPLOAD_PATH)
+        'image': FileField('Image')
     }
 
     form_columns = (

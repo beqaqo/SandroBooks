@@ -1,6 +1,5 @@
 from src.admin_views.base import SecureModelView
-from flask_admin.form import FileUploadField
-from src.config import Config
+from wtforms import FileField
 from markupsafe import Markup
 
 
@@ -10,12 +9,12 @@ class ProjectsView(SecureModelView):
     form_columns = ('title', 'description', 'link', 'image')
 
     form_extra_fields = {
-        'image': FileUploadField('Image', base_path=Config.UPLOAD_PATH)
+        'image': FileField('Image')
     }
 
     def _image_formatter(self, context, model, name):
         if model.image:
-            return Markup(f'<img src="/static/assets/{model.image}" width="100">')
+            return Markup(f'<img src="{model.image}" width="100">')
         return ""
 
     column_formatters = {

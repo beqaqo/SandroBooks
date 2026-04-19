@@ -15,3 +15,7 @@ class Config(object):
 
     SECRET_KEY = environ.get("SECRET_KEY", "defaultsecretkey")
     UPLOAD_PATH = path.join(BASE_DIRECTORY, "static", "assets")
+
+    CLOUDINARY_CLOUD_NAME = environ.get("CLOUDINARY_CLOUD_NAME")
+    CLOUDINARY_API_KEY = environ.get("CLOUDINARY_API_KEY")
+    CLOUDINARY_API_SECRET = environ.get("CLOUDINARY_API_SECRET")
