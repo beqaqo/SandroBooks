@@ -21,4 +21,5 @@ class Book(BaseModel):
     audio_link = db.Column(db.String)
     android_link = db.Column(db.String)
     ios_link = db.Column(db.String)
-    about_series = db.Column(db.String)
+    series_id = db.Column(db.Integer, db.ForeignKey('series.id'), nullable=True)
+    series = db.relationship("Series", back_populates="books")
