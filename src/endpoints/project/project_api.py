@@ -1,4 +1,4 @@
-from flask_restx import Resource, fields
+from flask_restx import Resource, fields, reqparse
 from src.ext import api
 from src.models.project import Project
 
@@ -10,16 +10,33 @@ project_model = api.model('Project', {
     "image": fields.String,
 })
 
+parser = reqparse.RequestParser()
+parser.add_argument('lang', required=False, type=str, choices=['ka', 'en', 'it'], default='ka')
+
+
+def serialize_project(p, lang='ka'):
+    return {
+        "id": p.id,
+        "title": p.get_title(lang),
+        "description": p.get_description(lang),
+        "link": p.link,
+        "image": p.image,
+    }
+
 
 @api.route("/projects")
 class ProjectsApi(Resource):
-    @api.marshal_list_with(project_model)
     def get(self):
-        return Project.query.all()
+        args = parser.parse_args()
+        lang = args["lang"] or 'ka'
+        projects = Project.query.all()
+        return [serialize_project(p, lang) for p in projects]
 
 
 @api.route("/project/<int:id>")
 class ProjectApi(Resource):
-    @api.marshal_with(project_model)
     def get(self, id):
-        return Project.query.get_or_404(id)
+        args = parser.parse_args()
+        lang = args["lang"] or 'ka'
+        project = Project.query.get_or_404(id)
+        return serialize_project(project, lang)
