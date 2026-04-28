@@ -2,7 +2,7 @@ from flask import Flask
 from src.admin_views import BookView
 from src.admin_views.base import SecureModelView
 from src.config import Config
-from src.ext import db, migrate, login_manager, admin, api
+from src.ext import db, migrate, login_manager, admin, api, cors
 from src.views import  auth_blueprint
 from src.commands import init_db, populate_db
 from src.models import User, Series, Book, FrequentlyAskedQuestion, Project
@@ -16,6 +16,7 @@ COMMANDS = [init_db, populate_db]
 
 def create_app():
     app = Flask(__name__)
+    cors.init_app(app)
     app.config.from_object(Config)
     register_extensions(app)
     register_blueprints(app)
