@@ -4,7 +4,11 @@ from src.models.book import Book
 from src.enums import CoverType, Booktype, Audience
 import random
 
-book_model = api.model('Book', {"id": fields.Integer, "title": fields.String, "image": fields.String})
+book_model = api.model('Book', {
+    "id": fields.Integer,
+    "title": fields.String,
+    "image": fields.String,
+})
 
 book_detail_model = api.model('BookDetail', {
     "id": fields.Integer,
@@ -26,6 +30,7 @@ book_detail_model = api.model('BookDetail', {
 })
 
 parser = reqparse.RequestParser()
+parser.add_argument('lang', required=False, type=str, choices=['ka', 'en', 'it'], default='ka')
 parser.add_argument('cover_type', type=str, choices=[e.value for e in CoverType], required=False)
 parser.add_argument("audience", type=str, choices=[e.value for e in Audience], required=False)
 parser.add_argument("book_type", type=str, choices=[e.value for e in Booktype], required=False)
@@ -35,17 +40,21 @@ parser.add_argument("page", type=int, required=False, default=1)
 parser.add_argument("page_size", type=int, required=False, default=12)
 
 
-def serialize_book(b):
-    return {"id": b.id, "title": b.title, "image": b.image}
-
-
-def serialize_book_detail(b):
+def serialize_book(b, lang='ka'):
     return {
         "id": b.id,
-        "title": b.title,
+        "title": b.get_title(lang),
+        "image": b.image,
+    }
+
+
+def serialize_book_detail(b, lang='ka'):
+    return {
+        "id": b.id,
+        "title": b.get_title(lang),
         "image": b.image,
         "price": b.price,
-        "description": b.description,
+        "description": b.get_description(lang),
         "publication_year": b.publication_year,
         "page_count": b.page_count,
         "format": b.format,
@@ -65,12 +74,12 @@ class BooksApi(Resource):
     @api.expect(parser)
     def get(self):
         args = parser.parse_args()
+        lang = args["lang"] or 'ka'
 
         page_size = max(1, min(args["page_size"] or 12, 48))
         page = max(1, args["page"] or 1)
 
-        query = (Book
-                 .query)
+        query = Book.query
 
         if args["audience"]:
             query = query.filter(Book.audience == args["audience"])
@@ -79,7 +88,8 @@ class BooksApi(Resource):
         if args["cover_type"]:
             query = query.filter(Book.cover_type == args["cover_type"])
         if args["search"]:
-            query = query.filter(Book.title.ilike(f"%{args['search']}%"))
+            title_col = getattr(Book, f"title_{lang}")
+            query = query.filter(title_col.ilike(f"%{args['search']}%"))
 
         sort = args.get("sort")
         if sort == "free":
@@ -98,7 +108,7 @@ class BooksApi(Resource):
         books = query.offset((page - 1) * page_size).limit(page_size).all()
 
         return {
-            "items": [serialize_book(b) for b in books],
+            "items": [serialize_book(b, lang) for b in books],
             "total": total,
             "page": page,
             "page_size": page_size,
@@ -108,7 +118,11 @@ class BooksApi(Resource):
 
 @api.route("/book/<int:id>")
 class BookApi(Resource):
+    @api.expect(parser)
     def get(self, id):
+        args = parser.parse_args()
+        lang = args["lang"] or 'ka'
+
         book = Book.query.get_or_404(id)
 
         same_series = []
@@ -119,14 +133,14 @@ class BookApi(Resource):
                 .limit(4)
                 .all()
             )
-            same_series = [serialize_book(b) for b in same_series_query]
+            same_series = [serialize_book(b, lang) for b in same_series_query]
 
         excluded_ids = {id} | {b["id"] for b in same_series}
         other_books = Book.query.filter(~Book.id.in_(excluded_ids)).all()
-        you_may_also_like = [serialize_book(b) for b in random.sample(other_books, min(4, len(other_books)))]
+        you_may_also_like = [serialize_book(b, lang) for b in random.sample(other_books, min(4, len(other_books)))]
 
         return {
-            "book": serialize_book_detail(book),
+            "book": serialize_book_detail(book, lang),
             "you_may_also_like": you_may_also_like,
             "same_series": same_series,
         }

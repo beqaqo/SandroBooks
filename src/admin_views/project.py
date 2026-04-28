@@ -6,9 +6,13 @@ from src.ext import cloud
 
 
 class ProjectsView(SecureModelView):
-    column_list = ('title', 'description', 'link', 'image')
+    column_list = ('title_ka', 'title_en', 'title_it', 'link', 'image')
 
-    form_columns = ('title', 'description', 'link', 'image')
+    form_columns = (
+        'title_ka', 'title_en', 'title_it',
+        'description_ka', 'description_en', 'description_it',
+        'link', 'image'
+    )
 
     form_extra_fields = {
         'image': FileField('Image')

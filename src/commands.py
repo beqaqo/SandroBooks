@@ -14,7 +14,7 @@ def init_db():
 
 @click.command("populate_db")
 @with_appcontext
-def populate_db():
+def populate_db(): #TODO ეს საერთოდ შესაცვლელია
 
     books = [
         {"title": "დიდი მოგზაურობა", "price": 32, "img": "book1.png"},

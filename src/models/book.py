@@ -6,10 +6,17 @@ class Book(BaseModel):
     __tablename__ = "books"
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String, nullable=False)
+
+    title_ka = db.Column(db.String, nullable=False)
+    title_en = db.Column(db.String, nullable=False)
+    title_it = db.Column(db.String, nullable=False)
+
+    description_ka = db.Column(db.String, nullable=False)
+    description_en = db.Column(db.String, nullable=False)
+    description_it = db.Column(db.String, nullable=False)
+
     price = db.Column(db.Float)
     image = db.Column(db.String)
-    description = db.Column(db.String, nullable=False)
     publication_year = db.Column(db.Integer)
     page_count = db.Column(db.Integer)
     format = db.Column(db.String)
@@ -23,3 +30,9 @@ class Book(BaseModel):
     ios_link = db.Column(db.String)
     series_id = db.Column(db.Integer, db.ForeignKey('series.id'), nullable=True)
     series = db.relationship("Series", back_populates="books")
+
+    def get_title(self, lang: str) -> str:
+        return getattr(self, f"title_{lang}", self.title_ka)
+
+    def get_description(self, lang: str) -> str:
+        return getattr(self, f"description_{lang}", self.description_ka)
