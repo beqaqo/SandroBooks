@@ -4,7 +4,7 @@ from src.models.user import User
 
 with app.app_context():
     admin = User(username="admin", role="Admin")
-    admin.password = "admin123"
+    admin.password = "IU@edu!@#$admin"
     db.session.add(admin)
     db.session.commit()
     print("Admin user created!")

@@ -2,7 +2,7 @@ from flask import Flask
 from src.admin_views import BookView
 from src.admin_views.base import SecureModelView
 from src.config import Config
-from src.ext import db, migrate, login_manager, admin, api, cloud
+from src.ext import db, migrate, login_manager, admin, api
 from src.views import  auth_blueprint
 from src.commands import init_db, populate_db
 from src.models import User, Series, Book, FrequentlyAskedQuestion, Project
@@ -20,7 +20,6 @@ def create_app():
     register_extensions(app)
     register_blueprints(app)
     register_commands(app)
-    initialize_cloud(app)
 
     return app
 
@@ -53,10 +52,3 @@ def register_blueprints(app):
 def register_commands(app):
     for command in COMMANDS:
         app.cli.add_command(command)
-
-def initialize_cloud(app):
-    cloud.config(
-        cloud_name=app.config["CLOUDINARY_CLOUD_NAME"],
-        api_key=app.config["CLOUDINARY_API_KEY"],
-        api_secret=app.config["CLOUDINARY_API_SECRET"]
-    )

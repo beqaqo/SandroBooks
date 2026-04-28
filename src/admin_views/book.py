@@ -1,14 +1,14 @@
 from src.admin_views.base import SecureModelView
-from wtforms import FileField
+from flask_admin.form import FileUploadField
+from src.config import Config
 from markupsafe import Markup
-
-from src.ext import cloud, uploader
 
 
 class BookView(SecureModelView):
     column_list = (
-        'title',
-        'description',
+        'title_ka',
+        'title_en',
+        'title_it',
         'image',
         'page_count',
         'online_link',
@@ -29,24 +29,13 @@ class BookView(SecureModelView):
 
     def _image_formatter(self, context, model, name):
         if model.image:
-            return Markup(f'<img src="{model.image}" width="100">')
+            return Markup(f'<img src="/static/assets/{model.image}" width="100">')
         return ""
 
-    def _on_model_change(self, form, model, is_created):
-        if form.image.data and getattr(form.image.data, "filename", None):
-            result = cloud.uploader.upload(
-                form.image.data,
-                folder="SandrosBooks"
-            )
-
-            model.image = result["secure_url"]
-            model.image_public_id = result["public_id"]
-
-        form.image.data = None
-
-
     column_formatters = {
-        'description': _description_formatter,
+        'description_ka': _description_formatter,
+        'description_en': _description_formatter,
+        'description_it': _description_formatter,
         'online_link': _link_formatter,
         'audio_link': _link_formatter,
         'android_link': _link_formatter,
@@ -55,14 +44,18 @@ class BookView(SecureModelView):
     }
 
     form_extra_fields = {
-        'image': FileField('Image')
+        'image': FileUploadField('Image', base_path=Config.UPLOAD_PATH)
     }
 
     form_columns = (
-        'title',
+        'title_ka',
+        'title_en',
+        'title_it',
+        'description_ka',
+        'description_en',
+        'description_it',
         'price',
         'image',
-        'description',
         'publication_year',
         'page_count',
         'format',
@@ -74,7 +67,7 @@ class BookView(SecureModelView):
         'audio_link',
         'android_link',
         'ios_link',
-        'series'
+        'series',
     )
 
     can_create = True
